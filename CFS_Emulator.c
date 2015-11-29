@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	
 	/* Generate producer thread and consumer threads*/
     generate_producer();
-    generate_consumers();
+    //generate_consumers();
 	
 
 	/* Wait for threads */
