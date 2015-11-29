@@ -1,4 +1,20 @@
-#include "CFS_Emulator.h"
+/* 
+SYSC4001 Assignment3
+Student: Junjie Kai	100814819
+*/
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#include "Common.h"
+
+void generate_producer(void);
+void generate_consumers(void);
+void *producer_thread_function(void *arg);
+void *consumer_threads_function(void *arg);
+void generate_items(void);
 
 int main() {
 
