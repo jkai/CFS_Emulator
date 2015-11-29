@@ -7,8 +7,8 @@ Student: Junjie Kai	100814819
 #define Assignment3_common_h
 
 /* 4-core with 20 initial processes */
-#define COUSUMER_NUMBER	4
-#define PROCESS_NUMBER	20
+#define CORE_NUMBER	4
+#define DEFAULT_PROCESS_NUMBER	20
 
 /* Process schedule types: FIFO, RR, NORMAL */
 #define SCHEDULE_FIFO 0
