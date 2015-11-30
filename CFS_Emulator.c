@@ -246,13 +246,13 @@ void print_process_info (process_struct *process)
 
 	switch(process->schedule_type) {
 		case SCHEDULE_FIFO:
-			printf("  FIFO  |\n");
+			printf("   FIFO   |\n");
 			break;
 		case SCHEDULE_RR:
-			printf("   RR   |\n");
+			printf("    RR    |\n");
 			break;
 		case SCHEDULE_NORMAL:
-			printf(" NORMAL |\n");
+			printf("  NORMAL  |\n");
 			break;
 		default:
 			printf("  N/A   |\n");
