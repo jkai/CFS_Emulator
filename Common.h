@@ -18,14 +18,16 @@ Student: Junjie Kai	100814819
 /* Each run queue has 20 slots */
 #define RUN_QUEUE_SIZE 20
 
+/* Default Values of processes */
+#define DEFAULT_STATIC_PRIORITY 120
+#define DEFAULT_TIME_SLICE 100
+
 typedef struct {
 	int pid;									//Generated Process ID, starts from 1
 	int schedule_type;							//Schedule types: FIFO, RR, NORMAL
-	int static_priority;						//Static priority
-	int dynamic_priority;						//Dynamic priority
-	int expected_exec_time;						//Expected Execution time
-	int time_slice;								//Time slice
-	int accu_time_slice;						//Accumulated time slice
+	int priority;								//Priority
+	int expected_exec_time;						//Expected Execution time, from 200 to 2000 ms
+	int time_slice;								//Time slice, default = 100ms
 } process_struct;
 
 /* Single run queue, acts as a circular buffer */

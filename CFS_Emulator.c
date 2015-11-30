@@ -15,6 +15,7 @@ void generate_consumers(void);
 void *producer_thread_function(void *arg);
 void *consumer_threads_function(void *arg);
 void generate_items(void);
+void initial_cpu_queues(void);
 void wait_for_producer(void);
 void clean_up_and_quit(void);
 
@@ -40,11 +41,15 @@ int main(int argc, char *argv[])
 	
 	/* Generate producer thread and consumer threads*/
     generate_producer();
+	/* Wait for producer to produce */
+	wait_for_producer();
+	
+	
+	
     //generate_consumers();
 	
 
-	/* Wait for threads */
-	wait_for_producer();
+	
     /* Clean up before quitting */
 	clean_up_and_quit();
 }
@@ -78,7 +83,7 @@ void generate_consumers(void)
 
 void *producer_thread_function(void *arg)
 {
-    printf("[Producer] Creation successful!\n");
+    printf("[Producer] Creation successful! Generating processes...\n");
     generate_items();
     pthread_exit("Producer quitting...\n");
 }
@@ -96,6 +101,8 @@ void generate_items(void)
 	int core_num;		//Define which core to assign the generated processes
 	process_struct *current_process	= NULL	//Point to the process in queue
 	
+	initial_cpu_queues();
+	
 	/* 
 		Processes generation ratios:
 		- SCHEDULE_FIFO		20%
@@ -109,9 +116,29 @@ void generate_items(void)
 		switch (i % 5)
 		{
 			/* Normal */
-			case 0: case 1: case 2:
-				//Assign it to core_num's RQ1 queue
-				cpu_queues[core_num].rq1.
+			case 0: case 1: case 2:			
+			/* Update the RQ1 queue */
+			
+			//Update count
+			cpu_queues[core_num].rq1.count++
+			//Assign the generated process to tail, and update the tail
+			current_process = &(cpu_queues[core_num].rq1.processes[cpu_queues[core_num].rq1.tail++]);
+				
+			/* Update the process */
+			//Assign the process id = i + 1, which means pid starts from 1
+			current_process->pid = i + 1;
+			//Assign the process type as SCHEDULE_NORMAL
+			current_process->schedule_type = SCHEDULE_NORMAL;
+			//priority = 120 (Default)
+			current_process->priority = DEFAULT_STATIC_PRIORITY;
+			//expected_exec_time = n * 100ms, n = [2, 20]
+			current_process->expected_exec_time = (2 + rand() % 18) * 100;
+			//Default time_slice = 100ms
+			current_process->time_slice = DEFAULT_TIME_SLICE
+			
+			printf("[Producer] A Normal process is created.\n");
+				
+				
 			break;
 			/* RR */
 			case 3:
@@ -131,6 +158,36 @@ void generate_items(void)
 	
 }
 
+void initial_cpu_queues(void)
+{
+	int i;
+	printf("[Producer] Initializing cpu queues...\n");
+	
+	/* 
+	Initialize the cpu_queues:
+		- Set head = 0
+		- Set tail = 0
+		- Set count = 0;
+	 */
+	 for (i = 0; i < CORE_NUMBER; ++i)
+	 {
+		 //Set heads
+		 cpu_queues[i].rq0.head = 0;
+		 cpu_queues[i].rq1.head = 0;
+		 cpu_queues[i].rq2.head = 0;
+		 //Set Tails
+		 cpu_queues[i].rq0.tail = 0;
+		 cpu_queues[i].rq1.tail = 0;
+		 cpu_queues[i].rq2.tail = 0;
+		 //Set counts
+		 cpu_queues[i].rq0.count = 0;
+		 cpu_queues[i].rq1.count = 0;
+		 cpu_queues[i].rq2.count = 0;
+	 }
+	 
+	 printf("[Producer] CPU queues are initialized.\n");
+}
+
 void wait_for_producer(void)
 {
 	int res = pthread_join(producer_thread, NULL);
@@ -144,7 +201,3 @@ void clean_up_and_quit(void)
 	printf("All done, cleaning up...\n");
     exit(EXIT_SUCCESS);
 }
-
-
-
-
