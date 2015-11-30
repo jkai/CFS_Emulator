@@ -28,11 +28,11 @@ typedef struct {
 	int accu_time_slice;						//Accumulated time slice
 } process_struct;
 
-/* Circular buffer to store Processes/tasks */
+/* Single run queue, acts as a circular buffer */
 typedef struct {
-	int head;									//Head of run_queue
-	int tail;									//Tail of run_queue
-	int count;									//Count of run_queue
+	int head;									//Head of circular buffer
+	int tail;									//Tail of circular buffer
+	int count;									//Count of items in circular buffer
 	process_struct processes[RUN_QUEUE_SIZE];	//Max 20 processes in a run_queue
 } run_queue;
 

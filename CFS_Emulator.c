@@ -35,6 +35,9 @@ int main(int argc, char *argv[])
 		printf("Using user defined processes_number: %d.\n", processes_number);
 	}
 	
+	/* Seed the random number generater with pid */
+	srand(getpid());
+	
 	/* Generate producer thread and consumer threads*/
     generate_producer();
     //generate_consumers();
@@ -89,7 +92,43 @@ void *consumer_threads_function(void *arg)
 
 void generate_items(void)
 {
-
+	int i;			//Index
+	int core_num;		//Define which core to assign the generated processes
+	process_struct *current_process	= NULL	//Point to the process in queue
+	
+	/* 
+		Processes generation ratios:
+		- SCHEDULE_FIFO		20%
+		- SCHEDULE_RR		20%
+		- SCHEDULE_NORMAL	60%
+	*/
+	for (i = 0; i < processes_number; ++i)
+	{
+		core_num = i % 4;	//Assign the generated process from Core0 to Core3
+		/* 0~2 -> Normal(60%), 3 -> RR(20%), 4 -> FIFO(20%) */
+		switch (i % 5)
+		{
+			/* Normal */
+			case 0: case 1: case 2:
+				//Assign it to core_num's RQ1 queue
+				cpu_queues[core_num].rq1.
+			break;
+			/* RR */
+			case 3:
+			break;
+			/* FIFO */
+			case 4:
+			
+			break;
+			default:
+				fprintf(stderr, "Invalid process type, quitting...\n");
+				exit(EXIT_FAILURE);	
+		}
+		
+		
+	}
+	
+	
 }
 
 void wait_for_producer(void)
