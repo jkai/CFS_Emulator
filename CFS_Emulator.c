@@ -9,6 +9,7 @@ Student: Junjie Kai	100814819
 #include <pthread.h>
 
 #include "Common.h"
+#include "cpu_queue.h"
 
 void generate_producer(void);
 void generate_consumers(void);
@@ -122,12 +123,9 @@ void generate_items(void)
 			/* Normal */
 			case 0: case 1: case 2:			
 			/* Update the RQ1 queue */
-			
-				//Update count
-				cpu_queues[core_num].rq1.count++;
 				//Assign the generated process to tail, and update the tail
 				current_process = &(cpu_queues[core_num].rq1.processes[cpu_queues[core_num].rq1.tail++]);
-					
+				
 			/* Update the process */
 				//Assign the process id = i + 1, which means pid starts from 1
 				current_process->pid = i + 1;
@@ -147,9 +145,6 @@ void generate_items(void)
 			/* RR */
 			case 3:
 			/* Update the RQ0 queue */
-			
-				//Update count
-				cpu_queues[core_num].rq0.count++;
 				//Assign the generated process to tail, and update the tail
 				current_process = &(cpu_queues[core_num].rq0.processes[cpu_queues[core_num].rq0.tail++]);
 					
@@ -171,9 +166,6 @@ void generate_items(void)
 			/* FIFO */
 			case 4:
 			/* Update the RQ0 queue */
-			
-				//Update count
-				cpu_queues[core_num].rq0.count++;
 				//Assign the generated process to tail, and update the tail
 				current_process = &(cpu_queues[core_num].rq0.processes[cpu_queues[core_num].rq0.tail++]);
 					
@@ -206,30 +198,15 @@ void initial_cpu_queues(void)
 {
 	int i;
 	printf("[Producer] Initializing cpu queues...\n");
+	multilevel_queue* mq = NULL;
 	
-	/* 
-	Initialize the cpu_queues:
-		- Set head = 0
-		- Set tail = 0
-		- Set count = 0;
-	 */
-	 for (i = 0; i < CORE_NUMBER; ++i)
-	 {
-		 //Set heads
-		 cpu_queues[i].rq0.head = 0;
-		 cpu_queues[i].rq1.head = 0;
-		 cpu_queues[i].rq2.head = 0;
-		 //Set Tails
-		 cpu_queues[i].rq0.tail = 0;
-		 cpu_queues[i].rq1.tail = 0;
-		 cpu_queues[i].rq2.tail = 0;
-		 //Set counts
-		 cpu_queues[i].rq0.count = 0;
-		 cpu_queues[i].rq1.count = 0;
-		 cpu_queues[i].rq2.count = 0;
-	 }
-	 
-	 printf("[Producer] CPU queues are initialized.\n");
+	for (i = 0; i < CORE_NUMBER; ++i)
+	{
+		mq = &(cpu_queues[i]);
+		multilevel_queue_init(mq);
+	}
+	
+	printf("[Producer] CPU queues are initialized.\n");
 }
 
 void wait_for_producer(void)
