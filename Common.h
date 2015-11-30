@@ -32,9 +32,8 @@ typedef struct {
 
 /* Single run queue, acts as a circular buffer */
 typedef struct {
-	int head;									//Head of circular buffer
-	int tail;									//Tail of circular buffer
-	int count;									//Count of items in circular buffer
+	int head;									//head of the buffer
+	int tail;									//tail of the buffer
 	process_struct processes[RUN_QUEUE_SIZE];	//Max 20 processes in a run_queue
 } run_queue;
 
