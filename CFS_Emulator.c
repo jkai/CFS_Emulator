@@ -158,7 +158,7 @@ void generate_items(void)
 				//expected_exec_time = n * 800ms, n = [1, 5]
 				current_process->expected_exec_time = (1 + (rand() % 5)) * 800;
 				//Default time_slice = 100ms
-				current_process->time_slice = DEFAULT_TIME_SLICE;
+				current_process->time_slice = ((140 - current_process->priority) * 5);
 				//Done
 			break;
 			/* FIFO */
