@@ -26,6 +26,7 @@ static int processes_number;		//User defined processes number, default = 20
 static multilevel_queue cpu_queues[CORE_NUMBER];	//4 Multilevel queues for 4 cores
 static pthread_t producer_thread;	//One producer thread
 static pthread_t consumer_threads[CORE_NUMBER];		//4 Consumer threads as 4 cores
+static pthread_mutex_t mutex;
 
 int main(int argc, char *argv[])
 {
@@ -36,6 +37,12 @@ int main(int argc, char *argv[])
 	} else {
 		processes_number = atoi(argv[1]);
 		printf("Using user defined processes_number: %d.\n", processes_number);
+	}
+	
+	/* Create mutex */
+	if ( pthread_mutex_init(&mutex, NULL) != 0) {
+		printf("Failed to create mutex\n");
+		exit(EXIT_FAILURE);
 	}
 	
 	/* Seed the random number generater with pid */
@@ -99,8 +106,10 @@ void generate_items(void)
 	int core_num;		//Define which core to assign the generated processes
 	process_struct *current_process	= NULL;	//Point to the process in queue
 	
-	initial_cpu_queues();
+	/* Mutex */
+	pthread_mutex_lock(&mutex);
 	
+	initial_cpu_queues();
 	/* 
 		Processes generation ratios:
 		- SCHEDULE_FIFO		20%
@@ -178,8 +187,9 @@ void generate_items(void)
 		
 		
 	}
-	
-	printf("Processes are generated, the current queues are:\n");
+	/* Release the mutex */
+	pthread_mutex_unlock(&mutex);
+	printf("[Producer] Processes are generated, the current status is:\n");
 	print_all_queues();
 
 }
@@ -209,6 +219,10 @@ void wait_for_producer(void)
 
 void clean_up_and_quit(void)
 {
+	/* Clean up the mutex */
+	if (pthread_mutex_destroy(&mutex) != 0) {
+		printf("Failed to release mutex.\n");
+	}
 	printf("All done, cleaning up...\n");
     exit(EXIT_SUCCESS);
 }
@@ -285,5 +299,5 @@ void print_all_queues(void)
 		}
 		
 	}
-	printf("----------------------------------------------------\n");
+	printf("----------------------------------------------------\n\n");
 }
