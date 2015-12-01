@@ -138,8 +138,6 @@ void generate_items(void)
 				//Default time_slice = 100ms
 				current_process->time_slice = DEFAULT_TIME_SLICE;
 				//Done
-				printf("[Producer] A Normal process is created for core%d:\n", core_num);
-				print_process_info (current_process);
 				break;
 
 			/* RR */
@@ -160,8 +158,6 @@ void generate_items(void)
 				//Default time_slice = 100ms
 				current_process->time_slice = DEFAULT_TIME_SLICE;
 				//Done
-				printf("[Producer] A RR process is created for core%d:\n", core_num);
-				print_process_info (current_process);
 			break;
 			/* FIFO */
 			case 4:
@@ -181,8 +177,6 @@ void generate_items(void)
 				//Default time_slice = expected_exec_time
 				current_process->time_slice = current_process->expected_exec_time;
 				//Done
-				printf("[Producer] A FIFO process is created for core%d:\n", core_num);
-				print_process_info (current_process);
 			break;
 			default:
 				fprintf(stderr, "Invalid process type, quitting...\n");
@@ -191,6 +185,9 @@ void generate_items(void)
 		
 		
 	}
+	
+	printf("Processes are generated, the current queues are:\n");
+	print_all_queues();
 
 }
 
@@ -217,7 +214,79 @@ void wait_for_producer(void)
 	}
 }
 
-void print_queue (int core_num)
+void print_all_queues(void)
+{
+	int i;
+	int core_index;
+	process_struct *p = NULL;
+	printf("    |pid|priority|execution time|time_slice|type|\n");
+	
+	for (core_index = 0; core_index < CORE_NUMBER; ++i)
+	{
+		// RQ0
+		printf("RQ0 ");
+		for (i = 0; i < (cpu_queues[core_index].rq0.tail - cpu_queues[core_index].rq0.head); ++i)
+		{
+			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq0.processes[i].pid, cpu_queues[core_index].rq0.processes[i].priority, cpu_queues[core_index].rq0.processes[i].expected_exec_time, cpu_queues[core_index].rq0.processes[i].time_slice)
+			switch(cpu_queues[core_index].rq0.schedule_type) {
+				case SCHEDULE_FIFO:
+					printf("FIFO|\n");
+					break;
+				case SCHEDULE_RR:
+					printf(" RR |\n");
+					break;
+				case SCHEDULE_NORMAL:
+					printf("NORM|\n");
+					break;
+				default:
+					printf("N/A |\n");
+			}
+		}
+		
+		// RQ1
+		printf("RQ1 ");
+		for (i = 0; i < (cpu_queues[core_index].rq1.tail - cpu_queues[core_index].rq1.head); ++i)
+		{
+			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq1.processes[i].pid, cpu_queues[core_index].rq1.processes[i].priority, cpu_queues[core_index].rq1.processes[i].expected_exec_time, cpu_queues[core_index].rq1.processes[i].time_slice)
+			switch(cpu_queues[core_index].rq1.schedule_type) {
+				case SCHEDULE_FIFO:
+					printf("FIFO|\n");
+					break;
+				case SCHEDULE_RR:
+					printf(" RR |\n");
+					break;
+				case SCHEDULE_NORMAL:
+					printf("NORM|\n");
+					break;
+				default:
+					printf("N/A |\n");
+			}
+		}
+		
+		// rq2
+		printf("RQ2 ");
+		for (i = 0; i < (cpu_queues[core_index].rq2.tail - cpu_queues[core_index].rq2.head); ++i)
+		{
+			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq2.processes[i].pid, cpu_queues[core_index].rq2.processes[i].priority, cpu_queues[core_index].rq2.processes[i].expected_exec_time, cpu_queues[core_index].rq2.processes[i].time_slice)
+			switch(cpu_queues[core_index].rq2.schedule_type) {
+				case SCHEDULE_FIFO:
+					printf("FIFO|\n");
+					break;
+				case SCHEDULE_RR:
+					printf(" RR |\n");
+					break;
+				case SCHEDULE_NORMAL:
+					printf("NORM|\n");
+					break;
+				default:
+					printf("N/A |\n");
+			}
+		}
+	}
+
+}
+
+void print_queue(int core_num)
 {
 	int i;
 	printf("CPU[%d]'s run queues:\n", core_num);
@@ -239,7 +308,7 @@ void print_queue (int core_num)
 	printf("\n-----------------------------------------\n");
 }
 
-void print_process_info (process_struct *process)
+void print_process_info(process_struct *process)
 {
 	printf("| [pid] = %03d |", process->pid);
 	printf(" [priority] = %03d |", process->priority);
