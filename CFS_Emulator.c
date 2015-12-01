@@ -18,8 +18,7 @@ void *consumer_threads_function(void *arg);
 void generate_items(void);
 void initial_cpu_queues(void);
 void wait_for_producer(void);
-void print_queue (int core_num);
-void print_process_info (process_struct *process);
+void print_all_queues(void);
 void clean_up_and_quit(void);
 
 /* Static variables */
@@ -46,8 +45,6 @@ int main(int argc, char *argv[])
     generate_producer();
 	/* Wait for producer to produce */
 	wait_for_producer();
-
-	print_queue(1);
 	
 	
 	
@@ -227,8 +224,8 @@ void print_all_queues(void)
 		printf("RQ0 ");
 		for (i = 0; i < (cpu_queues[core_index].rq0.tail - cpu_queues[core_index].rq0.head); ++i)
 		{
-			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq0.processes[i].pid, cpu_queues[core_index].rq0.processes[i].priority, cpu_queues[core_index].rq0.processes[i].expected_exec_time, cpu_queues[core_index].rq0.processes[i].time_slice)
-			switch(cpu_queues[core_index].rq0.schedule_type) {
+			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq0.processes[i].pid, cpu_queues[core_index].rq0.processes[i].priority, cpu_queues[core_index].rq0.processes[i].expected_exec_time, cpu_queues[core_index].rq0.processes[i].time_slice);
+			switch(cpu_queues[core_index].rq0.processes[i].schedule_type) {
 				case SCHEDULE_FIFO:
 					printf("FIFO|\n");
 					break;
@@ -247,8 +244,8 @@ void print_all_queues(void)
 		printf("RQ1 ");
 		for (i = 0; i < (cpu_queues[core_index].rq1.tail - cpu_queues[core_index].rq1.head); ++i)
 		{
-			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq1.processes[i].pid, cpu_queues[core_index].rq1.processes[i].priority, cpu_queues[core_index].rq1.processes[i].expected_exec_time, cpu_queues[core_index].rq1.processes[i].time_slice)
-			switch(cpu_queues[core_index].rq1.schedule_type) {
+			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq1.processes[i].pid, cpu_queues[core_index].rq1.processes[i].priority, cpu_queues[core_index].rq1.processes[i].expected_exec_time, cpu_queues[core_index].rq1.processes[i].time_slice);
+			switch(cpu_queues[core_index].rq1.processes[i].schedule_type) {
 				case SCHEDULE_FIFO:
 					printf("FIFO|\n");
 					break;
@@ -267,8 +264,8 @@ void print_all_queues(void)
 		printf("RQ2 ");
 		for (i = 0; i < (cpu_queues[core_index].rq2.tail - cpu_queues[core_index].rq2.head); ++i)
 		{
-			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq2.processes[i].pid, cpu_queues[core_index].rq2.processes[i].priority, cpu_queues[core_index].rq2.processes[i].expected_exec_time, cpu_queues[core_index].rq2.processes[i].time_slice)
-			switch(cpu_queues[core_index].rq2.schedule_type) {
+			printf("| %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq2.processes[i].pid, cpu_queues[core_index].rq2.processes[i].priority, cpu_queues[core_index].rq2.processes[i].expected_exec_time, cpu_queues[core_index].rq2.processes[i].time_slice);
+			switch(cpu_queues[core_index].rq2.processes[i].schedule_type) {
 				case SCHEDULE_FIFO:
 					printf("FIFO|\n");
 					break;
@@ -286,48 +283,6 @@ void print_all_queues(void)
 
 }
 
-void print_queue(int core_num)
-{
-	int i;
-	printf("CPU[%d]'s run queues:\n", core_num);
-	printf("-----------------------------------------\nRQ0:\n");
-	for (i = 0; i < cpu_queues[core_num].rq0.count; ++i)
-	{
-		printf("pid%02d|", cpu_queues[core_num].rq0.processes[i].pid);
-	}
-	printf("\n-----------------------------------------\nRQ1:\n");
-	for (i = 0; i < cpu_queues[core_num].rq1.count; ++i)
-	{
-		printf("pid%02d|", cpu_queues[core_num].rq1.processes[i].pid);
-	}
-	printf("\n-----------------------------------------\nRQ2:\n");
-	for (i = 0; i < cpu_queues[core_num].rq2.count; ++i)
-	{
-		printf("pid%02d|", cpu_queues[core_num].rq2.processes[i].pid);
-	}
-	printf("\n-----------------------------------------\n");
-}
-
-void print_process_info(process_struct *process)
-{
-	printf("| [pid] = %03d |", process->pid);
-	printf(" [priority] = %03d |", process->priority);
-	printf(" [exec time] = %04d ms |", process->expected_exec_time);
-
-	switch(process->schedule_type) {
-		case SCHEDULE_FIFO:
-			printf("   FIFO   |\n");
-			break;
-		case SCHEDULE_RR:
-			printf("    RR    |\n");
-			break;
-		case SCHEDULE_NORMAL:
-			printf("  NORMAL  |\n");
-			break;
-		default:
-			printf("  N/A   |\n");
-	}
-}
 
 void clean_up_and_quit(void)
 {
