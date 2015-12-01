@@ -18,11 +18,11 @@ Initialize the multilevel_queue:
 */
 void multilevel_queue_init(multilevel_queue* mq)
 {
-	mg->rq0.head = 0;
-	mg->rq1.head = 0;
-	mg->rq2.head = 0;
+	mq->rq0.head = 0;
+	mq->rq1.head = 0;
+	mq->rq2.head = 0;
 	
-	mg->rq0.tail = 0;
-	mg->rq1.tail = 0;
-	mg->rq2.tail = 0;
+	mq->rq0.tail = 0;
+	mq->rq1.tail = 0;
+	mq->rq2.tail = 0;
 }
