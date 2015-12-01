@@ -217,28 +217,29 @@ void print_all_queues(void)
 {
 	int i;
 	int core_index;
+	
 	process_struct *p = NULL;
-	printf("    |pid|priority|execution time|time_slice|type|\n");
+	printf("\n| index |pid|priority|execution time|time_slice|type|\n");
 	
 	for (core_index = 0; core_index < CORE_NUMBER; ++core_index)
 	{
+		int rq0_i = 0;
+		int rq1_i = 0;
+		int rq2_i = 0;
+		printf("--------------------Core %d--------------------------\n", core_index);
 		// RQ0
-		printf("RQ0\n-------------------------------------------------\n");
 		for (i = 0; i < (cpu_queues[core_index].rq0.tail - cpu_queues[core_index].rq0.head); ++i)
 		{
-			printf("    | %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq0.processes[i].pid, cpu_queues[core_index].rq0.processes[i].priority, cpu_queues[core_index].rq0.processes[i].expected_exec_time, cpu_queues[core_index].rq0.processes[i].time_slice);
+			printf("| RQ0_%d | %2d|    %3d |      %4d ms |  %4d ms |", rq0_i++, cpu_queues[core_index].rq0.processes[i].pid, cpu_queues[core_index].rq0.processes[i].priority, cpu_queues[core_index].rq0.processes[i].expected_exec_time, cpu_queues[core_index].rq0.processes[i].time_slice);
 			switch(cpu_queues[core_index].rq0.processes[i].schedule_type) {
 				case SCHEDULE_FIFO:
 					printf("FIFO|\n");
-					printf("-------------------------------------------------\n");
 					break;
 				case SCHEDULE_RR:
 					printf(" RR |\n");
-					printf("-------------------------------------------------\n");
 					break;
 				case SCHEDULE_NORMAL:
 					printf("NORM|\n");
-					printf("-------------------------------------------------\n");
 					break;
 				default:
 					printf("N/A |\n");
@@ -246,22 +247,18 @@ void print_all_queues(void)
 		}
 		
 		// RQ1
-		printf("RQ1\n-------------------------------------------------\n");
 		for (i = 0; i < (cpu_queues[core_index].rq1.tail - cpu_queues[core_index].rq1.head); ++i)
 		{
-			printf("    | %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq1.processes[i].pid, cpu_queues[core_index].rq1.processes[i].priority, cpu_queues[core_index].rq1.processes[i].expected_exec_time, cpu_queues[core_index].rq1.processes[i].time_slice);
+			printf("| RQ1_%d | %2d|    %3d |      %4d ms |  %4d ms |", rq1_i++, cpu_queues[core_index].rq1.processes[i].pid, cpu_queues[core_index].rq1.processes[i].priority, cpu_queues[core_index].rq1.processes[i].expected_exec_time, cpu_queues[core_index].rq1.processes[i].time_slice);
 			switch(cpu_queues[core_index].rq1.processes[i].schedule_type) {
 				case SCHEDULE_FIFO:
 					printf("FIFO|\n");
-					printf("-------------------------------------------------\n");
 					break;
 				case SCHEDULE_RR:
 					printf(" RR |\n");
-					printf("-------------------------------------------------\n");
 					break;
 				case SCHEDULE_NORMAL:
 					printf("NORM|\n");
-					printf("-------------------------------------------------\n");
 					break;
 				default:
 					printf("N/A |\n");
@@ -269,27 +266,24 @@ void print_all_queues(void)
 		}
 		
 		// rq2
-		printf("RQ2\n-------------------------------------------------\n");
 		for (i = 0; i < (cpu_queues[core_index].rq2.tail - cpu_queues[core_index].rq2.head); ++i)
 		{
-			printf("    | %2d|    %3d |      %4d ms |  %4d ms |", cpu_queues[core_index].rq2.processes[i].pid, cpu_queues[core_index].rq2.processes[i].priority, cpu_queues[core_index].rq2.processes[i].expected_exec_time, cpu_queues[core_index].rq2.processes[i].time_slice);
+			printf("| RQ2_%d | %2d|    %3d |      %4d ms |  %4d ms |", rq2_i++, cpu_queues[core_index].rq2.processes[i].pid, cpu_queues[core_index].rq2.processes[i].priority, cpu_queues[core_index].rq2.processes[i].expected_exec_time, cpu_queues[core_index].rq2.processes[i].time_slice);
 			switch(cpu_queues[core_index].rq2.processes[i].schedule_type) {
 				case SCHEDULE_FIFO:
 					printf("FIFO|\n");
-					printf("-------------------------------------------------\n");
 					break;
 				case SCHEDULE_RR:
 					printf(" RR |\n");
-					printf("-------------------------------------------------\n");
 					break;
 				case SCHEDULE_NORMAL:
 					printf("NORM|\n");
-					printf("-------------------------------------------------\n");
 					break;
 				default:
 					printf("N/A |\n");
 			}
 		}
+		
 	}
-
+	printf("----------------------------------------------------\n");
 }
