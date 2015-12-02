@@ -16,8 +16,10 @@ void generate_consumers(void);
 void *producer_thread_function(void *arg);
 void *consumer_threads_function(void *arg);
 void generate_items(void);
+void consume_processes(int core_num);
 void initial_cpu_queues(void);
 void wait_for_producer(void);
+void wait_for_consumers(void);
 void print_all_queues(void);
 void clean_up_and_quit(void);
 
@@ -48,15 +50,33 @@ int main(int argc, char *argv[])
 	/* Seed the random number generater with pid */
 	srand(getpid());
 	
-	/* Generate producer thread and consumer threads*/
+	/* Generate producer thread*/
     generate_producer();
+	
 	/* Wait for producer to produce */
 	wait_for_producer();
 	
-    //generate_consumers();
+	/* Generate consumer threads*/
+	generate_consumers();
+	
+    /* Wait for Consumers */
+	wait_for_consumers();
 	
     /* Clean up before quitting */
 	clean_up_and_quit();
+}
+
+void wait_for_consumers(void)
+{
+	int i;
+	for(i = 0; i < CORE_NUMBER; ++i)
+	{
+		int res = pthread_join(consumer_threads[i], NULL);
+		if( res != 0) {
+			perror("pthread_join failed");
+		}
+	}
+	
 }
 
 void generate_producer(void)
@@ -75,7 +95,7 @@ void generate_consumers(void)
 {
     int res;
     long int consumer_threads_index;
-
+	
     //Generate consumer threads
     for(consumer_threads_index = 0; consumer_threads_index < CORE_NUMBER; consumer_threads_index++) {
         res = pthread_create(&(consumer_threads[consumer_threads_index]), NULL, consumer_threads_function, (void *)consumer_threads_index);
@@ -95,10 +115,64 @@ void *producer_thread_function(void *arg)
 
 void *consumer_threads_function(void *arg)
 {
-    long int i = (long int)arg;
-    printf("[Consumer %li] Creation successful!\n", i);
+	/* Initializing consumer_thread */
+    long int int_buf = (long int)arg;
+	int core_num = (int)int_buf;
+    printf("[Consumer %d] Creation successful!\n", core_num);
+	
+	/* Consume the processes */
+	consume_processes(core_num);
+
     pthread_exit("Consumer quitting...\n");
 }
+
+void consume_processes(int core_num)
+{
+	/* Point to the core's own multilevel_queue */
+	multilevel_queue* mq = &(cpu_queues[core_num]);
+	printf("[Consumer %d] Start!\n", core_num);
+	
+	while (!multilevel_queue_empty(mq))
+	{
+		/* Assign the pointers */
+		run_queue* rq0 = &(mq->rq0);
+		run_queue* rq1 = &(mq->rq1);
+		run_queue* rq2 = &(mq->rq2);
+		
+		/* Start from RQ0 */
+		if (!run_queue_empty(rq0))
+		{
+			printf("[Consumer %d] It's RQ0!\n", core_num);
+			break;
+		}
+		/* If RQ0 done, go RQ1 */
+		else if (!run_queue_empty(rq0))
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
 
 void generate_items(void)
 {
@@ -193,6 +267,7 @@ void generate_items(void)
 	print_all_queues();
 
 }
+
 
 void initial_cpu_queues(void)
 {
