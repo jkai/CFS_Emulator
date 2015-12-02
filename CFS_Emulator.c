@@ -142,37 +142,25 @@ void consume_processes(int core_num)
 		/* Start from RQ0 */
 		if (!run_queue_empty(rq0))
 		{
-			printf("[Consumer %d] It's RQ0!\n", core_num);
-			break;
+			fetch_queue(rq0, core_num);
 		}
 		/* If RQ0 done, go RQ1 */
-		else if (!run_queue_empty(rq0))
-		
-		
+		else if (!run_queue_empty(rq1))
+		{
+			fetch_queue(rq1, core_num);
+		}
+		/* If RQ1 done, go RQ2 */
+		else if (!run_queue_empty(rq2))
+		{
+			fetch_queue(rq2, core_num);
+		}
+		else
+		{
+			break;
+		}
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
-
-
-
-
-
-
-
-
-
-
-
 
 void generate_items(void)
 {
