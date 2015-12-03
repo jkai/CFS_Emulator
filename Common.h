@@ -21,6 +21,7 @@ Student: Junjie Kai	100814819
 /* Default Values of processes */
 #define DEFAULT_STATIC_PRIORITY 120
 #define DEFAULT_TIME_SLICE 100
+#define WAIT_TIME 1200
 
 typedef struct {
 	int pid;									//Generated Process ID, starts from 1
@@ -28,6 +29,7 @@ typedef struct {
 	int priority;								//Priority
 	int expected_exec_time;						//Expected Execution time, from 200 to 2000 ms
 	int time_slice;								//Time slice, default = 100ms
+	int finished;								//If it's finished
 } process_struct;
 
 /* Single run queue, acts as a circular buffer */

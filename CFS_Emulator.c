@@ -76,7 +76,6 @@ void wait_for_consumers(void)
 			perror("pthread_join failed");
 		}
 	}
-	
 }
 
 void generate_producer(void)
@@ -118,7 +117,6 @@ void *consumer_threads_function(void *arg)
 	/* Initializing consumer_thread */
     long int int_buf = (long int)arg;
 	int core_num = (int)int_buf;
-    printf("[Consumer %d] Creation successful!\n", core_num);
 	
 	/* Consume the processes */
 	consume_processes(core_num);
@@ -130,7 +128,6 @@ void consume_processes(int core_num)
 {
 	/* Point to the core's own multilevel_queue */
 	multilevel_queue* mq = &(cpu_queues[core_num]);
-	printf("[Consumer %d] Start!\n", core_num);
 	
 	while (!multilevel_queue_empty(mq))
 	{
@@ -201,6 +198,8 @@ void generate_items(void)
 				current_process->expected_exec_time = (2 + rand() % 18) * 100;
 				//Default time_slice = 100ms
 				current_process->time_slice = DEFAULT_TIME_SLICE;
+				//Not finished
+				current_process->finished = 0;
 				//Done
 				break;
 
@@ -221,6 +220,8 @@ void generate_items(void)
 				current_process->expected_exec_time = (1 + (rand() % 5)) * 800;
 				//Default time_slice = 100ms
 				current_process->time_slice = ((140 - current_process->priority) * 5);
+				//Not finished
+				current_process->finished = 0;
 				//Done
 			break;
 			/* FIFO */
@@ -240,6 +241,8 @@ void generate_items(void)
 				current_process->expected_exec_time = (1 + (rand() % 5)) * 800;
 				//Default time_slice = expected_exec_time
 				current_process->time_slice = current_process->expected_exec_time;
+				//Not finished
+				current_process->finished = 0;
 				//Done
 			break;
 			default:
