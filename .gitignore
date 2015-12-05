@@ -3,3 +3,5 @@ CFS_Emulator
 *.o
 *.o
 cpu_queue.o
+
+*.txt

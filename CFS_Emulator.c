@@ -7,6 +7,8 @@ Student: Junjie Kai	100814819
 #include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include "Common.h"
 #include "cpu_queue.h"
@@ -200,6 +202,9 @@ void generate_items(void)
 				current_process->time_slice = DEFAULT_TIME_SLICE;
 				//Not finished
 				current_process->finished = 0;
+				//Get times
+				gettimeofday(&current_process->started_time, NULL);
+				gettimeofday(&current_process->last_sleep_time, NULL);
 				//Done
 				break;
 
@@ -222,6 +227,8 @@ void generate_items(void)
 				current_process->time_slice = ((140 - current_process->priority) * 5);
 				//Not finished
 				current_process->finished = 0;
+				//Get time
+				gettimeofday(&current_process->started_time, NULL);
 				//Done
 			break;
 			/* FIFO */
@@ -243,6 +250,8 @@ void generate_items(void)
 				current_process->time_slice = current_process->expected_exec_time;
 				//Not finished
 				current_process->finished = 0;
+				//Get time
+				gettimeofday(&current_process->started_time, NULL);
 				//Done
 			break;
 			default:

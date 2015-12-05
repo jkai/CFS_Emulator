@@ -22,6 +22,7 @@ Student: Junjie Kai	100814819
 #define DEFAULT_STATIC_PRIORITY 120
 #define DEFAULT_TIME_SLICE 100
 #define WAIT_TIME 1200
+#define MAX_SLEEP_AVG 10
 
 typedef struct {
 	int pid;									//Generated Process ID, starts from 1
@@ -30,6 +31,9 @@ typedef struct {
 	int expected_exec_time;						//Expected Execution time, from 200 to 2000 ms
 	int time_slice;								//Time slice, default = 100ms
 	int finished;								//If it's finished
+	struct timeval started_time;				//Started time
+	struct timeval last_sleep_time;				//Last time it starts sleeping
+	int sleep_avg;								//Sleep_avg
 } process_struct;
 
 /* Single run queue, acts as a circular buffer */
