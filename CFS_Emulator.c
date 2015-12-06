@@ -213,7 +213,6 @@ void consume_processes(int core_num)
 		/* Release the mutex */
 		pthread_mutex_unlock(&consumer_mutexes[core_num]);
 	}
-	printf("core %d is empty!!!!!!!\n", core_num);
 	
 }
 

@@ -55,14 +55,10 @@ void fetch_queue(run_queue* rq, int core_num)
 	
 	/* Remove it if finished*/
 	if (process_to_run->finished)
-	{
+	{		
 		for (i = min_index; i < rq->tail; ++i)
 		{
-			rq->processes[i].pid = rq->processes[i+1].pid;
-			rq->processes[i].schedule_type = rq->processes[i+1].schedule_type;
-			rq->processes[i].priority = rq->processes[i+1].priority;
-			rq->processes[i].expected_exec_time = rq->processes[i+1].expected_exec_time ;
-			rq->processes[i].time_slice = rq->processes[i+1].time_slice;
+			rq->processes[i] = rq->processes[i+1];
 		}
 		/* Update Tail */
 		rq->tail--;
