@@ -6,15 +6,15 @@ Completely Fair Share Scheduler emulation using threads
 
 This assignment emulates Linux Completely Fair Share Scheduler (FSS) emulation using threads, due to time limitation the functionalities are defined roughly.
 
-## Producer
+## 	Producer
 
 Producer will generate required number of processes and put them into 4 cores' queues (RQ0, RQ1, and RQ2).
 
-## Consumer (Core)
+## 	Consumer (Core)
 
 Single consumer acts as a CPU core, and consumes processes in its own queues based on defined scheduling policy.
 
-## Balancer
+## 	Balancer
 
 Balancer wakes up every 3s and check if there's an unbalance. If so, it will move one process from the CPU has longest queue to the CPU has the least.
 
