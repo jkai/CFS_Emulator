@@ -15,22 +15,29 @@ Student: Junjie Kai	100814819
 
 void generate_producer(void);
 void generate_consumers(void);
+void generate_balancer(void);
 void *producer_thread_function(void *arg);
+void *balancer_thread_function(void *arg);
 void *consumer_threads_function(void *arg);
 void generate_items(void);
 void consume_processes(int core_num);
 void initial_cpu_queues(void);
+void balance_queues(void);
 void wait_for_producer(void);
 void wait_for_consumers(void);
 void print_all_queues(void);
 void clean_up_and_quit(void);
 
 /* Static variables */
-static int processes_number;		//User defined processes number, default = 20
-static multilevel_queue cpu_queues[CORE_NUMBER];	//4 Multilevel queues for 4 cores
-static pthread_t producer_thread;	//One producer thread
-static pthread_t consumer_threads[CORE_NUMBER];		//4 Consumer threads as 4 cores
-static pthread_mutex_t mutex;
+static int processes_number;							//User defined processes number, default = 20
+static int done_flag;									//Tells balancer to stop
+static int alive_consumers;								//# of alive consumers
+static multilevel_queue cpu_queues[CORE_NUMBER];		//4 Multilevel queues for 4 cores
+static pthread_t producer_thread;						//One producer thread
+static pthread_t balancer_thread;						//One balancer thread
+static pthread_t consumer_threads[CORE_NUMBER];			//4 Consumer threads as 4 cores
+static pthread_mutex_t mutex;							//mutex for P/C
+static pthread_mutex_t consumer_mutexes[CORE_NUMBER];	//4 mutex for balancer
 
 int main(int argc, char *argv[])
 {
@@ -42,13 +49,26 @@ int main(int argc, char *argv[])
 		processes_number = atoi(argv[1]);
 		printf("Using user defined processes_number: %d.\n", processes_number);
 	}
+
+	done_flag = 0;		//Not done
+	alive_consumers = 0;//No alive consumer
 	
 	/* Create mutex */
 	if ( pthread_mutex_init(&mutex, NULL) != 0) {
 		printf("Failed to create mutex\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
+	/* Create consumer mutex */
+	int i;
+	for(i = 0; i < CORE_NUMBER; ++i)
+	{
+		if ( pthread_mutex_init(&consumer_mutexes[i], NULL) != 0) {
+			printf("Failed to create mutex\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	/* Seed the random number generater with pid */
 	srand(getpid());
 	
@@ -60,6 +80,9 @@ int main(int argc, char *argv[])
 	
 	/* Generate consumer threads*/
 	generate_consumers();
+
+	/* Generate balancer thread*/
+	generate_balancer();
 	
     /* Wait for Consumers */
 	wait_for_consumers();
@@ -92,6 +115,18 @@ void generate_producer(void)
     }
 }
 
+void generate_balancer(void)
+{
+    int res;
+	
+    //Generate producer thread
+    res = pthread_create(&balancer_thread, NULL, balancer_thread_function, NULL);
+    if (res != 0) {
+        perror("Thread balancer creation failed");
+        exit(EXIT_FAILURE);
+    }
+}
+
 void generate_consumers(void)
 {
     int res;
@@ -104,6 +139,7 @@ void generate_consumers(void)
             perror("Thread consumer creation failed");
             exit(EXIT_FAILURE);
         }
+        alive_consumers++;
     }
 }
 
@@ -112,6 +148,19 @@ void *producer_thread_function(void *arg)
     printf("[Producer] Creation successful! Generating processes...\n");
     generate_items();
     pthread_exit("Producer quitting...\n");
+}
+
+void *balancer_thread_function(void *arg)
+{
+    printf("[Balancer] Creation successful!\n");
+    //Wake up every 3s to balance the queues
+    while (!done_flag)
+    {
+    	sleep(3);
+    	//balance_queues();
+    }
+
+    pthread_exit("Balancer quitting...\n");
 }
 
 void *consumer_threads_function(void *arg)
@@ -131,8 +180,12 @@ void consume_processes(int core_num)
 	/* Point to the core's own multilevel_queue */
 	multilevel_queue* mq = &(cpu_queues[core_num]);
 	
+	//while (!done_flag)
 	while (!multilevel_queue_empty(mq))
 	{
+		//Lock its own cpu queue
+		pthread_mutex_lock(&consumer_mutexes[core_num]);
+
 		/* Assign the pointers */
 		run_queue* rq0 = &(mq->rq0);
 		run_queue* rq1 = &(mq->rq1);
@@ -155,9 +208,12 @@ void consume_processes(int core_num)
 		}
 		else
 		{
-			break;
+			
 		}
+		/* Release the mutex */
+		pthread_mutex_unlock(&consumer_mutexes[core_num]);
 	}
+	printf("core %d is empty!!!!!!!\n", core_num);
 	
 }
 
@@ -292,12 +348,80 @@ void wait_for_producer(void)
 	}
 }
 
+void balance_queues(void)
+{
+	int core_index;
+	int count;
+	int min_count = RUN_QUEUE_SIZE;
+	int max_count = 0;
+	int min_index = 0;
+	int max_index = 0;
+
+	//Lock Consumer threads, hard coded them for better performance, to avoid branches.
+	pthread_mutex_lock(&consumer_mutexes[0]);
+	pthread_mutex_lock(&consumer_mutexes[1]);
+	pthread_mutex_lock(&consumer_mutexes[2]);
+	pthread_mutex_lock(&consumer_mutexes[3]);
+
+	//Go through four cores
+	for (core_index = 0; core_index < CORE_NUMBER; ++core_index)
+	{
+		count = (cpu_queues[core_index].rq0.tail - cpu_queues[core_index].rq0.head) + (cpu_queues[core_index].rq1.tail - cpu_queues[core_index].rq1.head) + (cpu_queues[core_index].rq2.tail - cpu_queues[core_index].rq2.head);
+		printf("[Balancer] Core%d has %d processes in its queues\n", core_index, count);	
+		if (min_count >= count)
+		{
+			min_count = count;
+			min_index = core_index;
+		}
+		else if (max_count <= count)
+		{
+			max_count = count;
+			max_index = core_index;
+		}
+	}
+
+	if (max_count == 0)
+	{
+		done_flag = 1;
+	}
+	else {
+		//Check if balance necesery
+		if ((max_count - min_count) >= 2)
+		{
+
+		} else {
+			printf("[Balancer] No need to balance this time.\n");
+		}
+	}
+
+
+
+
+	/* Release the mutex */
+	pthread_mutex_unlock(&consumer_mutexes[3]);
+	pthread_mutex_unlock(&consumer_mutexes[2]);
+	pthread_mutex_unlock(&consumer_mutexes[1]);
+	pthread_mutex_unlock(&consumer_mutexes[0]);
+}
+
 void clean_up_and_quit(void)
 {
+	done_flag = 1;
 	/* Clean up the mutex */
 	if (pthread_mutex_destroy(&mutex) != 0) {
 		printf("Failed to release mutex.\n");
 	}
+
+	/* Clean up consumer mutex */
+	int i;
+	for(i = 0; i < CORE_NUMBER; ++i)
+	{
+		if (pthread_mutex_destroy(&consumer_mutexes[i]) != 0) {
+			printf("Failed to release mutex.\n");
+		}
+	}
+
+
 	printf("All done, cleaning up...\n");
     exit(EXIT_SUCCESS);
 }
@@ -307,7 +431,6 @@ void print_all_queues(void)
 	int i;
 	int core_index;
 	
-	process_struct *p = NULL;
 	printf("\n| index |pid|priority|execution time|time_slice|type|\n");
 	
 	for (core_index = 0; core_index < CORE_NUMBER; ++core_index)
