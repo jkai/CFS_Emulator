@@ -23,11 +23,18 @@ Balancer wakes up every 3s and check if there's an unbalance. If so, it will mov
 A makefile is provided, use make all to compile.
 
 The main program can be started as:
+
 ./CFS_Emulator
+
+Different number of processes can be provided as:
+
+./CFS_Emulator 30
+
+(Assignment requires 20, so it's may or may not work properly.)
 
 # For grader
 
-Due to the large number of outputs as prof required, verify is in a log file can be handy, it can be done by:
+Due to the large number of outputs as prof required, verify it in a log file can be handy, it can be done by:
 
 ./CFS_Emulator > log.txt
 
