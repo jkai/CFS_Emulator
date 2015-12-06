@@ -156,8 +156,8 @@ void *balancer_thread_function(void *arg)
     //Wake up every 3s to balance the queues
     while (!done_flag)
     {
-    	sleep(3);
-    	//balance_queues();
+    	balance_queues();
+		sleep(3);
     }
 
     pthread_exit("Balancer quitting...\n");
@@ -180,7 +180,6 @@ void consume_processes(int core_num)
 	/* Point to the core's own multilevel_queue */
 	multilevel_queue* mq = &(cpu_queues[core_num]);
 	
-	//while (!done_flag)
 	while (!multilevel_queue_empty(mq))
 	{
 		//Lock its own cpu queue
@@ -381,13 +380,18 @@ void balance_queues(void)
 
 	if (max_count == 0)
 	{
+		printf("[Balancer] No need to balance this time.\n");
 		done_flag = 1;
 	}
 	else {
 		//Check if balance necesery
 		if ((max_count - min_count) >= 2)
 		{
-
+			/* Move from CPU[max_index] to CPU[min_index] */
+			cpu_queues[min_index].rq1.processes[cpu_queues[min_index].rq1.tail] = cpu_queues[max_index].rq1.processes[cpu_queues[max_index].rq1.tail];
+			/* Update queues */
+			cpu_queues[min_index].rq1.tail++;
+			cpu_queues[max_index].rq1.tail--;
 		} else {
 			printf("[Balancer] No need to balance this time.\n");
 		}
@@ -408,7 +412,7 @@ void clean_up_and_quit(void)
 	done_flag = 1;
 	/* Clean up the mutex */
 	if (pthread_mutex_destroy(&mutex) != 0) {
-		printf("Failed to release mutex.\n");
+		printf("Failed to release mutex, it's already released.\n");
 	}
 
 	/* Clean up consumer mutex */
@@ -416,7 +420,7 @@ void clean_up_and_quit(void)
 	for(i = 0; i < CORE_NUMBER; ++i)
 	{
 		if (pthread_mutex_destroy(&consumer_mutexes[i]) != 0) {
-			printf("Failed to release mutex.\n");
+			printf("Failed to release mutex, it's already released.\n");
 		}
 	}
 

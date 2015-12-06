@@ -130,16 +130,22 @@ void run_process(process_struct* process_to_run, int core_num)
 	        int ticks = calculate_ticks(process_to_run->last_sleep_time, current_time);
 	        process_to_run->sleep_avg = min(process_to_run->sleep_avg + ticks, MAX_SLEEP_AVG);
 
-	        //Update priority
-	        process_to_run->priority = calculate_dp(process_to_run->priority, process_to_run->sleep_avg);
-	        printf("[Consumer %d][pid%d][NORMAL]'s priority has been updated to %d.\n", core_num, process_to_run->pid, process_to_run->priority);
-
 	        //Run
 	        struct timeval t1, t2;
 	        gettimeofday(&t1, NULL);
 	        usleep(process_to_run->time_slice * 1000);
 	        gettimeofday(&t2, NULL);
-
+			
+			//Update priority
+			int temp_prio = calculate_dp(process_to_run->priority, process_to_run->sleep_avg);
+			//Check if to RQ2
+			if (process_to_run->priority <= 130 && temp_prio > 130)
+			{
+				printf("[Consumer %d][pid%d][NORMAL] is moved to RQ2 with the priority = %d.\n", core_num, process_to_run->pid, temp_prio);
+			}
+	        process_to_run->priority = temp_prio;
+	        printf("[Consumer %d][pid%d][NORMAL]'s priority has been updated to %d.\n", core_num, process_to_run->pid, process_to_run->priority);
+	
 	        // Decrement sleep_avg
 	        ticks = calculate_ticks(t1, t2);
 	        process_to_run->sleep_avg = max(process_to_run->sleep_avg - ticks, 0);
@@ -153,7 +159,9 @@ void run_process(process_struct* process_to_run, int core_num)
 	}
 }
 
-//Turnaround time
+
+
+/* Turnaround time */
 int get_tat (struct timeval t1, struct timeval t2)
 {
 	int time1 = (t1.tv_sec*1000) + (t1.tv_usec/1000);
@@ -161,27 +169,28 @@ int get_tat (struct timeval t1, struct timeval t2)
     return (time2-time1);
 }
 
+/* calculate_time_slice */
 int calculate_time_slice(int sp) {
-    if (sp < 120) return (140 - sp) * 20;
-    else return (140 - sp) * 5;
+    if (sp < 120) return (240 - sp) * 20;
+    else return (240 - sp) * 5;
 }
 
+/* calculate_ticks */
 int calculate_ticks(struct timeval t1, struct timeval t2) {
     int time1 = (t1.tv_sec*1000) + (t1.tv_usec/1000);
     int time2 = (t2.tv_sec*1000) + (t2.tv_usec/1000);
     return (time2-time1) / 100;
 }
 
+/* calculate_dp */
 int calculate_dp(int previous_dp, int bonus) {
     return max(100, min(previous_dp - bonus + 5, 139));
 }
 
+
+/* Get Min/Max */
 int min(int a, int b) {return (a<=b ? a:b);}
 int max(int a, int b) {return (a>b ? a:b);}
-
-
-
-
 
 
 
